@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -18,8 +14,12 @@ export async function POST(req: Request) {
       return new NextResponse(JSON.stringify({ error: "Messages are required." }), { status: 400 })
     }
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "ft:gpt-4.1-2025-04-14:personal::BPAoUBAT",
       messages: [
         {
           role: "system",
