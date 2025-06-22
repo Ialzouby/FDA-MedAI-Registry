@@ -70,19 +70,19 @@ export function Dashboard() {
               value="overview"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
             >
-              📊 Overview
+              Overview
             </TabsTrigger>
             <TabsTrigger
               value="analytics"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
             >
-              📈 Analytics
+              Analytics
             </TabsTrigger>
             <TabsTrigger
               value="database"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
             >
-              🗄️ Database
+              Database
             </TabsTrigger>
           </TabsList>
 
