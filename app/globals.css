@@ -78,3 +78,16 @@
     text-wrap: balance;
   }
 }
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  background-color: #ef4444; /* red-500 for inactive */
+}
+
+.status-indicator.status-active {
+  background-color: #22c55e; /* green-500 for active */
+}

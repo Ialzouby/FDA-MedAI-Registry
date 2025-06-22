@@ -38,8 +38,16 @@ export function Dashboard() {
               <p className="text-sm text-gray-600 dark:text-gray-400">Real-time device approval insights</p>
             </div>
           </div>
+          <div className="flex items-center space-x-3">
+          </div>
 
           <div className="flex items-center space-x-4">
+            {/* Status Indicator */}
+            <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-200 dark:border-green-800">
+              <div className="status-indicator status-active"></div>
+              <span className="text-sm font-medium text-green-700 dark:text-green-300">Live Data</span>
+            </div>
+            
             <Button
               variant="outline"
               size="sm"
