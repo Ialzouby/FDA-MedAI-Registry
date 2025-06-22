@@ -59,7 +59,11 @@ export function AnalyticsCharts() {
       })
     } catch (err) {
       console.error("❌ Error loading analytics data:", err)
-      setError(err.message)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("An unknown error occurred")
+      }
     } finally {
       setLoading(false)
     }
@@ -184,44 +188,22 @@ export function AnalyticsCharts() {
           </TabsList>
 
           <TabsContent value="heatmaps" className="mt-6 space-y-8">
-            {/* Device Type Heatmap */}
-            {data.deviceType && (
+            {/* Task Heatmap */}
+            {data.task && (
               <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    🔥 Device Type Heatmap ({viewMode})
+                    ⚙️ Device Task Heatmap ({viewMode})
                     <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
-                      {data.deviceType.categories.length} types
+                      {data.task.categories.length} tasks
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Heatmap
-                    data={viewMode === "annual" ? data.deviceType.annual : data.deviceType.cumulative}
-                    categories={data.deviceType.categories.slice(0, 20)} // Show top 20 for readability
-                    years={data.deviceType.years}
-                    title=""
-                  />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Domain Heatmap */}
-            {data.domain && (
-              <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    🏥 Medical Domain Heatmap ({viewMode})
-                    <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
-                      {data.domain.categories.length} domains
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Heatmap
-                    data={viewMode === "annual" ? data.domain.annual : data.domain.cumulative}
-                    categories={data.domain.categories}
-                    years={data.domain.years}
+                    data={viewMode === "annual" ? data.task.annual : data.task.cumulative}
+                    categories={data.task.categories}
+                    years={data.task.years}
                     title=""
                   />
                 </CardContent>
@@ -250,22 +232,44 @@ export function AnalyticsCharts() {
               </Card>
             )}
 
-            {/* Task Heatmap */}
-            {data.task && (
+            {/* Domain Heatmap */}
+            {data.domain && (
               <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    ⚙️ Device Task Heatmap ({viewMode})
+                    🏥 Medical Domain Heatmap ({viewMode})
                     <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
-                      {data.task.categories.length} tasks
+                      {data.domain.categories.length} domains
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Heatmap
-                    data={viewMode === "annual" ? data.task.annual : data.task.cumulative}
-                    categories={data.task.categories}
-                    years={data.task.years}
+                    data={viewMode === "annual" ? data.domain.annual : data.domain.cumulative}
+                    categories={data.domain.categories}
+                    years={data.domain.years}
+                    title=""
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Device Type Heatmap */}
+            {data.deviceType && (
+              <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                <CardHeader>
+                  <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    🔥 Device Type Heatmap ({viewMode})
+                    <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
+                      {data.deviceType.categories.length} types
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Heatmap
+                    data={viewMode === "annual" ? data.deviceType.annual : data.deviceType.cumulative}
+                    categories={data.deviceType.categories.slice(0, 20)} // Show top 20 for readability
+                    years={data.deviceType.years}
                     title=""
                   />
                 </CardContent>
