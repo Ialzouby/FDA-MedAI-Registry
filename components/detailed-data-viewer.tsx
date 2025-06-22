@@ -1,0 +1,312 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2, Download, Search, Filter } from "lucide-react"
+import {
+  fetchDetailedDeviceData,
+  type DetailedProcessedData,
+  type DetailedDeviceRecord,
+} from "@/lib/detailed-data-fetcher"
+
+export function DetailedDataViewer() {
+  const [data, setData] = useState<DetailedProcessedData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all")
+  const [selectedYear, setSelectedYear] = useState<string>("all")
+  const [selectedDomain, setSelectedDomain] = useState<string>("all")
+  const [filteredRecords, setFilteredRecords] = useState<DetailedDeviceRecord[]>([])
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await fetchDetailedDeviceData()
+      setData(result)
+      setFilteredRecords(result.records)
+    } catch (err) {
+      console.error("❌ Error loading detailed data:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!data) return
+
+    let filtered = data.records
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (record) =>
+          record.deviceName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          record.deviceDeveloper.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          record.submissionNumber.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    if (selectedSpecialty !== "all") {
+      filtered = filtered.filter((record) => record.medicalSpecialty === selectedSpecialty)
+    }
+
+    if (selectedYear !== "all") {
+      filtered = filtered.filter((record) => {
+        const year = new Date(record.dateOfAuthorization).getFullYear().toString()
+        return year === selectedYear
+      })
+    }
+
+    if (selectedDomain !== "all") {
+      filtered = filtered.filter((record) => record.domain === selectedDomain)
+    }
+
+    setFilteredRecords(filtered)
+  }, [data, searchTerm, selectedSpecialty, selectedYear, selectedDomain])
+
+  const exportToCSV = () => {
+    if (!filteredRecords.length) return
+
+    const headers = [
+      "Submission #",
+      "Date",
+      "Device Name",
+      "Developer",
+      "Medical Specialty",
+      "Device Type",
+      "Domain",
+      "Modality",
+      "Task",
+      "Validation Method (AI)",
+      "RCT (AI)",
+    ]
+
+    const rows = filteredRecords.map((record) => [
+      record.submissionNumber,
+      record.dateOfAuthorization,
+      record.deviceName,
+      record.deviceDeveloper,
+      record.medicalSpecialty,
+      record.deviceType,
+      record.domain,
+      record.modality,
+      record.task,
+      record.validationMethodAI,
+      record.rctAI,
+    ])
+
+    const csvContent = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `fda_detailed_data_${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setSelectedSpecialty("all")
+    setSelectedYear("all")
+    setSelectedDomain("all")
+  }
+
+  if (loading) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-600 dark:text-gray-400" />
+            <p className="text-gray-600 dark:text-gray-400">Loading detailed FDA device data...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+            <div className="text-red-800 dark:text-red-200 font-medium">Error loading data:</div>
+            <div className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</div>
+            <Button onClick={loadData} className="mt-3" variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!data) return null
+
+  return (
+    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              📋 Detailed Device Database
+              <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
+                {filteredRecords.length} records
+              </Badge>
+            </CardTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Complete FDA device approval database with advanced filtering
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={clearFilters} variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Clear Filters
+            </Button>
+            <Button onClick={exportToCSV} variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        {/* Advanced Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search devices, developers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500"
+            />
+          </div>
+
+          <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
+            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+              <SelectValue placeholder="Medical Specialty" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+              <SelectItem value="all">All Specialties</SelectItem>
+              {data.medicalSpecialties.map((specialty) => (
+                <SelectItem key={specialty} value={specialty}>
+                  {specialty}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedDomain} onValueChange={setSelectedDomain}>
+            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+              <SelectValue placeholder="Domain" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+              <SelectItem value="all">All Domains</SelectItem>
+              {data.domains.map((domain) => (
+                <SelectItem key={domain} value={domain}>
+                  {domain}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+              <SelectItem value="all">All Years</SelectItem>
+              {data.years.map((year) => (
+                <SelectItem key={year} value={year}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Data Table */}
+        <div className="overflow-x-auto border rounded-lg border-gray-200 dark:border-gray-700">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Submission #
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Date
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Device Name
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Developer
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Specialty
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Domain
+                </th>
+                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                  Validation
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.slice(0, 50).map((record, index) => (
+                <tr
+                  key={index}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 transition-colors"
+                >
+                  <td className="p-4 font-mono text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    {record.submissionNumber}
+                  </td>
+                  <td className="p-4 text-gray-900 dark:text-gray-100">{record.dateOfAuthorization}</td>
+                  <td className="p-4 max-w-xs">
+                    <div className="truncate text-gray-900 dark:text-gray-100 font-medium" title={record.deviceName}>
+                      {record.deviceName}
+                    </div>
+                  </td>
+                  <td className="p-4 max-w-xs">
+                    <div className="truncate text-gray-700 dark:text-gray-300" title={record.deviceDeveloper}>
+                      {record.deviceDeveloper}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
+                    >
+                      {record.medicalSpecialty}
+                    </Badge>
+                  </td>
+                  <td className="p-4 text-gray-700 dark:text-gray-300">{record.domain}</td>
+                  <td className="p-4 text-gray-700 dark:text-gray-300">{record.validationMethodAI}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredRecords.length > 50 && (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+              Showing first 50 of {filteredRecords.length} results
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
