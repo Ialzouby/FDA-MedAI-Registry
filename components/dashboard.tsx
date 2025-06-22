@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Sun, Moon } from "lucide-react"
+import { Sun, Moon, MessageSquare } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -11,6 +11,7 @@ import { DeviceCharts } from "./device-charts"
 import { TrendAnalysis } from "./trend-analysis"
 import { TopCategories } from "./top-categories"
 import { AnalyticsCharts } from "./analytics-charts"
+import Link from "next/link"
 
 export function Dashboard() {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -119,6 +120,15 @@ export function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Chat Bubble */}
+      <Link
+        href="/chat"
+        className="fixed bottom-8 right-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg hover:scale-105 transform transition-all duration-300 ease-in-out z-50"
+        title="AI Assistant"
+      >
+        <MessageSquare className="h-6 w-6" />
+      </Link>
     </div>
   )
 }
