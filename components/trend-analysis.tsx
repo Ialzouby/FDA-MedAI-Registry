@@ -13,7 +13,7 @@ export function TrendAnalysis() {
   const [modality, setModality] = useState<ProcessedData | null>(null)
   const [task, setTask] = useState<ProcessedData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState("deviceType")
+  const [tab, setTab] = useState("domain")
 
   useEffect(() => {
     const loadData = async () => {
@@ -46,27 +46,11 @@ export function TrendAnalysis() {
       </CardHeader>
       <CardContent>
         <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="mb-4 grid grid-cols-4 gap-2 bg-gray-100 dark:bg-gray-700">
-           {/* <TabsTrigger value="deviceType">Device Type</TabsTrigger> */}
+          <TabsList className="mb-4 grid grid-cols-3 gap-2 bg-gray-100 dark:bg-gray-700">
             <TabsTrigger value="domain">Domain</TabsTrigger>
             <TabsTrigger value="modality">Modality</TabsTrigger>
             <TabsTrigger value="task">Task</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="deviceType">
-            {loading || !deviceType ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              </div>
-            ) : (
-              <LineChart
-                data={deviceType.annual}
-                categories={deviceType.categories}
-                years={deviceType.years}
-                title="Device Type Trends"
-              />
-            )}
-          </TabsContent>
 
           <TabsContent value="domain">
             {loading || !domain ? (

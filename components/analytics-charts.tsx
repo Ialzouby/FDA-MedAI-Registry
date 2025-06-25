@@ -171,7 +171,7 @@ export function AnalyticsCharts() {
         </div>
 
         {/* Visualization Tabs */}
-        <Tabs defaultValue="heatmaps" className="w-full">
+        <Tabs defaultValue="trends" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-700">
           <TabsTrigger
               value="trends"
