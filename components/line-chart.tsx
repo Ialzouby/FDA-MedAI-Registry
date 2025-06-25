@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useRef, useEffect, useState } from "react"
 
 interface LineChartProps {
   data: { [key: string]: { [year: string]: number } }
@@ -53,8 +53,22 @@ export function LineChart({ data, categories, years, title, selectedCategories }
   }, [data, categories, years, selectedCategories])
 
   const chartHeight = 300
-  const chartWidth = 800
   const padding = { top: 20, right: 20, bottom: 40, left: 60 }
+
+  // Responsive width logic
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [chartWidth, setChartWidth] = useState(600)
+
+  useEffect(() => {
+    function handleResize() {
+      if (containerRef.current) {
+        setChartWidth(containerRef.current.offsetWidth)
+      }
+    }
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const xScale = (yearIndex: number) =>
     padding.left + (yearIndex / (years.length - 1)) * (chartWidth - padding.left - padding.right)
@@ -63,11 +77,11 @@ export function LineChart({ data, categories, years, title, selectedCategories }
     chartHeight - padding.bottom - (value / maxValue) * (chartHeight - padding.top - padding.bottom)
 
   return (
-    <div className="w-full">
+    <div className="w-full" ref={containerRef}>
       <h3 className="text-lg font-semibold mb-4 text-center">{title}</h3>
       <div className="flex gap-6">
-        <div className="flex-1">
-          <svg width={chartWidth} height={chartHeight} className="border rounded">
+        <div className="flex-1 overflow-x-auto">
+          <svg width={chartWidth} height={chartHeight} className="border rounded bg-white dark:bg-gray-800">
             {/* Grid lines */}
             {Array.from({ length: 6 }, (_, i) => {
               const y = padding.top + (i / 5) * (chartHeight - padding.top - padding.bottom)
@@ -137,8 +151,9 @@ export function LineChart({ data, categories, years, title, selectedCategories }
                   r="3"
                   fill={color}
                   className="hover:r-5 transition-all cursor-pointer"
-                  title={`${category} (${years[index]}): ${value}`}
-                />
+                >
+                  <title>{`${category} (${years[index]}): ${value}`}</title>
+                </circle>
               )),
             )}
           </svg>

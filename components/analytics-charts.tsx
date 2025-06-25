@@ -173,18 +173,19 @@ export function AnalyticsCharts() {
         {/* Visualization Tabs */}
         <Tabs defaultValue="heatmaps" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-700">
+          <TabsTrigger
+              value="trends"
+              className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
+            >
+              📈 Trend Lines
+            </TabsTrigger>
             <TabsTrigger
               value="heatmaps"
               className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
             >
               🔥 Heatmaps
             </TabsTrigger>
-            <TabsTrigger
-              value="trends"
-              className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 text-gray-700 dark:text-gray-300"
-            >
-              📈 Trend Lines
-            </TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="heatmaps" className="mt-6 space-y-8">
