@@ -138,9 +138,32 @@ export function DetailedDataViewer() {
     setSelectedModality("all")
   }
 
-  // For dropdown options
-  const tasks = data ? Array.from(new Set(data.records.map((r) => r.task))).sort() : []
-  const modalities = data ? Array.from(new Set(data.records.map((r) => r.modality))).sort() : []
+  // For dropdown options - filter out any empty, null, or undefined values
+  const tasks = data ? Array.from(new Set(data.records.map((r) => r.task).filter(item => item && item.trim() !== ''))).sort() : []
+  const modalities = data ? Array.from(new Set(data.records.map((r) => r.modality).filter(item => item && item.trim() !== ''))).sort() : []
+  
+  // Also filter the other arrays to be safe
+  const filteredYears = data ? data.years.filter(item => item && item.toString().trim() !== '') : []
+  const filteredSpecialties = data ? data.medicalSpecialties.filter(item => item && item.trim() !== '') : []
+  const filteredDomains = data ? data.domains.filter(item => item && item.trim() !== '') : []
+  
+  // Debug logging to help identify empty values
+  if (data) {
+    console.log('Debug - Original arrays:', {
+      years: data.years,
+      specialties: data.medicalSpecialties,
+      domains: data.domains,
+      tasks: data.records.map(r => r.task),
+      modalities: data.records.map(r => r.modality)
+    })
+    console.log('Debug - Filtered arrays:', {
+      years: filteredYears,
+      specialties: filteredSpecialties,
+      domains: filteredDomains,
+      tasks,
+      modalities
+    })
+  }
 
   if (loading) {
     return (
@@ -223,7 +246,7 @@ export function DetailedDataViewer() {
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
               <SelectItem value="all">All Years</SelectItem>
-              {data.years.map((year) => (
+              {filteredYears.map((year) => (
                 <SelectItem key={year} value={year}>
                   {year}
                 </SelectItem>
@@ -237,7 +260,7 @@ export function DetailedDataViewer() {
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
               <SelectItem value="all">All Specialties</SelectItem>
-              {data.medicalSpecialties.map((specialty) => (
+              {filteredSpecialties.map((specialty) => (
                 <SelectItem key={specialty} value={specialty}>
                   {specialty}
                 </SelectItem>
@@ -251,7 +274,7 @@ export function DetailedDataViewer() {
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
               <SelectItem value="all">All Domains</SelectItem>
-              {data.domains.map((domain) => (
+              {filteredDomains.map((domain) => (
                 <SelectItem key={domain} value={domain}>
                   {domain}
                 </SelectItem>
