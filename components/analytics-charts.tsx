@@ -44,12 +44,33 @@ export function AnalyticsCharts() {
     setLoading(true)
     setError(null)
     try {
+      console.log("🚀 Starting to load all analytics data...")
+      
       const [deviceTypeData, domainData, modalityData, taskData] = await Promise.all([
-        fetchDeviceTypeData(),
-        fetchDomainData(),
-        fetchModalityData(),
-        fetchTaskData(),
+        fetchDeviceTypeData().catch(err => {
+          console.error("❌ Error fetching device type data:", err)
+          throw new Error(`Device Type: ${err.message}`)
+        }),
+        fetchDomainData().catch(err => {
+          console.error("❌ Error fetching domain data:", err)
+          throw new Error(`Domain: ${err.message}`)
+        }),
+        fetchModalityData().catch(err => {
+          console.error("❌ Error fetching modality data:", err)
+          throw new Error(`Modality: ${err.message}`)
+        }),
+        fetchTaskData().catch(err => {
+          console.error("❌ Error fetching task data:", err)
+          throw new Error(`Task: ${err.message}`)
+        }),
       ])
+
+      console.log("✅ All data loaded successfully:", {
+        deviceType: { categories: deviceTypeData.categories.length, years: deviceTypeData.years.length },
+        domain: { categories: domainData.categories.length, years: domainData.years.length },
+        modality: { categories: modalityData.categories.length, years: modalityData.years.length },
+        task: { categories: taskData.categories.length, years: taskData.years.length }
+      })
 
       setData({
         deviceType: deviceTypeData,
@@ -254,49 +275,11 @@ export function AnalyticsCharts() {
                 </CardContent>
               </Card>
             )}
-
-            {/* Device Type Heatmap */}
-            {data.deviceType && (
-              <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                    🔥 Device Type Heatmap ({viewMode})
-                    <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
-                      {data.deviceType.categories.length} types
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Heatmap
-                    data={viewMode === "annual" ? data.deviceType.annual : data.deviceType.cumulative}
-                    categories={data.deviceType.categories.slice(0, 20)} // Show top 20 for readability
-                    years={data.deviceType.years}
-                    title=""
-                  />
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
 
           <TabsContent value="trends" className="mt-6 space-y-8">
             {/* Device Type Trends */}
-            {data.deviceType && (
-              <Card className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-gray-100">📈 Device Type Trends ({viewMode})</CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Top device types by total count over time</p>
-                </CardHeader>
-                <CardContent>
-                  <LineChart
-                    data={viewMode === "annual" ? data.deviceType.annual : data.deviceType.cumulative}
-                    categories={data.deviceType.categories}
-                    years={data.deviceType.years}
-                    title=""
-                    selectedCategories={selectedCategories}
-                  />
-                </CardContent>
-              </Card>
-            )}
+            {/* Removed as per instructions */}
 
             {/* Domain Trends */}
             {data.domain && (

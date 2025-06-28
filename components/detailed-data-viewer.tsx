@@ -12,6 +12,7 @@ import {
   type DetailedProcessedData,
   type DetailedDeviceRecord,
 } from "@/lib/detailed-data-fetcher"
+import { DeviceDetailCard } from "./device-detail-card"
 
 export function DetailedDataViewer() {
   const [data, setData] = useState<DetailedProcessedData | null>(null)
@@ -22,6 +23,7 @@ export function DetailedDataViewer() {
   const [selectedYear, setSelectedYear] = useState<string>("all")
   const [selectedDomain, setSelectedDomain] = useState<string>("all")
   const [filteredRecords, setFilteredRecords] = useState<DetailedDeviceRecord[]>([])
+  const [selectedDevice, setSelectedDevice] = useState<DetailedDeviceRecord | null>(null)
 
   useEffect(() => {
     loadData()
@@ -36,7 +38,7 @@ export function DetailedDataViewer() {
       setFilteredRecords(result.records)
     } catch (err) {
       console.error("❌ Error loading detailed data:", err)
-      setError(err.message)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
     } finally {
       setLoading(false)
     }
@@ -159,22 +161,25 @@ export function DetailedDataViewer() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              📋 Detailed Device Database
-              <Badge variant="outline" className="border-gray-300 dark:border-gray-600">
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-3 text-2xl font-bold">
+              <div className="w-8 h-8 bg-gray-900 dark:bg-white rounded-lg flex items-center justify-center">
+                <span className="text-white dark:text-gray-900 font-bold text-sm">📋</span>
+              </div>
+              Detailed Device Database
+              <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold">
                 {filteredRecords.length} records
               </Badge>
             </CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Complete FDA device approval database with advanced filtering
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-11">
+              Complete FDA device approval database with advanced filtering and AI-powered insights
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={clearFilters} variant="outline" size="sm">
+          <div className="flex items-center gap-3">
+            <Button onClick={clearFilters} variant="outline" size="sm" className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
               <Filter className="h-4 w-4 mr-2" />
               Clear Filters
             </Button>
-            <Button onClick={exportToCSV} variant="outline" size="sm">
+            <Button onClick={exportToCSV} variant="outline" size="sm" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
@@ -184,19 +189,19 @@ export function DetailedDataViewer() {
 
       <CardContent className="space-y-6">
         {/* Advanced Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search devices, developers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500"
+              className="pl-10 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200"
             />
           </div>
 
           <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
-            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
               <SelectValue placeholder="Medical Specialty" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
@@ -210,7 +215,7 @@ export function DetailedDataViewer() {
           </Select>
 
           <Select value={selectedDomain} onValueChange={setSelectedDomain}>
-            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
               <SelectValue placeholder="Domain" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
@@ -224,7 +229,7 @@ export function DetailedDataViewer() {
           </Select>
 
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="bg-white dark:bg-gray-600 border-gray-300 dark:border-gray-500">
+            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
@@ -239,30 +244,27 @@ export function DetailedDataViewer() {
         </div>
 
         {/* Data Table */}
-        <div className="overflow-x-auto border rounded-lg border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto border rounded-xl border-gray-200 dark:border-gray-700 shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Submission #
                 </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Date
                 </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Device Name
                 </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Developer
                 </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Specialty
                 </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
+                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Domain
-                </th>
-                <th className="text-left p-4 font-semibold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600">
-                  Validation
                 </th>
               </tr>
             </thead>
@@ -270,43 +272,51 @@ export function DetailedDataViewer() {
               {filteredRecords.slice(0, 50).map((record, index) => (
                 <tr
                   key={index}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700 transition-all duration-200 cursor-pointer group"
+                  onClick={() => setSelectedDevice(record)}
                 >
-                  <td className="p-4 font-mono text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  <td className="p-4 font-mono text-xs text-gray-900 dark:text-gray-100 font-bold group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
                     {record.submissionNumber}
                   </td>
-                  <td className="p-4 text-gray-900 dark:text-gray-100">{record.dateOfAuthorization}</td>
+                  <td className="p-4 text-gray-900 dark:text-gray-100 font-medium">{record.dateOfAuthorization}</td>
                   <td className="p-4 max-w-xs">
-                    <div className="truncate text-gray-900 dark:text-gray-100 font-medium" title={record.deviceName}>
+                    <div className="truncate text-gray-900 dark:text-gray-100 font-semibold group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors" title={record.deviceName}>
                       {record.deviceName}
                     </div>
                   </td>
                   <td className="p-4 max-w-xs">
-                    <div className="truncate text-gray-700 dark:text-gray-300" title={record.deviceDeveloper}>
+                    <div className="truncate text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors" title={record.deviceDeveloper}>
                       {record.deviceDeveloper}
                     </div>
                   </td>
                   <td className="p-4">
                     <Badge
                       variant="secondary"
-                      className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200"
+                      className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 group-hover:bg-gray-300 dark:group-hover:bg-gray-600 transition-all duration-200"
                     >
                       {record.medicalSpecialty}
                     </Badge>
                   </td>
-                  <td className="p-4 text-gray-700 dark:text-gray-300">{record.domain}</td>
-                  <td className="p-4 text-gray-700 dark:text-gray-300">{record.validationMethodAI}</td>
+                  <td className="p-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{record.domain}</td>
                 </tr>
               ))}
             </tbody>
           </table>
           {filteredRecords.length > 50 && (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
               Showing first 50 of {filteredRecords.length} results
             </div>
           )}
         </div>
       </CardContent>
+
+      {/* Device Detail Card Popup */}
+      {selectedDevice && (
+        <DeviceDetailCard
+          device={selectedDevice}
+          onClose={() => setSelectedDevice(null)}
+        />
+      )}
     </Card>
   )
 }

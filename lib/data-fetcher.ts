@@ -1,14 +1,9 @@
 import Papa from "papaparse"
 
-// Google Sheets URLs from your Python code
+// Google Sheets URLs - Updated to use the detailed database
 export const DATA_SOURCES = {
-  deviceType:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlnJBLSPzj-3w5oqi27JyS3zxVxM83oGKQXcQRlrLBfwtaAsnZTKicorsioKEj2oYPAPIRJpwle4rv/pub?gid=336724584&single=true&output=csv",
-  domain:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlnJBLSPzj-3w5oqi27JyS3zxVxM83oGKQXcQRlrLBfwtaAsnZTKicorsioKEj2oYPAPIRJpwle4rv/pub?gid=1661948723&single=true&output=csv",
-  modality:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlnJBLSPzj-3w5oqi27JyS3zxVxM83oGKQXcQRlrLBfwtaAsnZTKicorsioKEj2oYPAPIRJpwle4rv/pub?gid=986877468&single=true&output=csv",
-  task: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlnJBLSPzj-3w5oqi27JyS3zxVxM83oGKQXcQRlrLBfwtaAsnZTKicorsioKEj2oYPAPIRJpwle4rv/pub?gid=67316351&single=true&output=csv",
+  detailedDatabase:
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRlnJBLSPzj-3w5oqi27JyS3zxVxM83oGKQXcQRlrLBfwtaAsnZTKicorsioKEj2oYPAPIRJpwle4rv/pub?output=csv&gid=123494604",
 }
 
 export interface ProcessedData {
@@ -19,222 +14,248 @@ export interface ProcessedData {
 }
 
 async function fetchCSV(url: string): Promise<string[][]> {
-  const response = await fetch(url)
-  const csvText = await response.text()
-
-  return new Promise((resolve, reject) => {
-    Papa.parse(csvText, {
-      complete: (results) => resolve(results.data as string[][]),
-      error: (error) => reject(error),
+  console.log("🌐 Fetching CSV from:", url)
+  
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Accept': 'text/csv,text/plain,*/*',
+      },
     })
-  })
+    
+    if (!response.ok) {
+      console.error("❌ HTTP Error:", response.status, response.statusText)
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const csvText = await response.text()
+    console.log("📄 Raw CSV response length:", csvText.length)
+    console.log("📄 First 200 characters:", csvText.substring(0, 200))
+
+    return new Promise((resolve, reject) => {
+      Papa.parse(csvText, {
+        complete: (results: any) => {
+          console.log("✅ CSV parsed successfully:", {
+            dataLength: results.data.length,
+            firstRow: results.data[0],
+            secondRow: results.data[1]
+          })
+          resolve(results.data as string[][])
+        },
+        error: (error: any) => {
+          console.error("❌ CSV parsing error:", error)
+          reject(error)
+        },
+      })
+    })
+  } catch (error) {
+    console.error("❌ Fetch error:", error)
+    throw error
+  }
 }
 
 export async function fetchDeviceTypeData(): Promise<ProcessedData> {
-  console.log("🔍 Fetching Device Type data from:", DATA_SOURCES.deviceType)
-  const data = await fetchCSV(DATA_SOURCES.deviceType)
+  console.log("🔍 Fetching detailed database to process Device Type data")
+  const data = await fetchCSV(DATA_SOURCES.detailedDatabase)
 
-  console.log("📊 Raw Device Type data structure:")
-  console.log("First row:", data[0])
-  console.log("Second row:", data[1])
-  console.log("Third row:", data[2])
+  // Process the detailed database to create device type summary
+  const deviceTypeCounts: { [key: string]: { [year: string]: number } } = {}
+  const years = new Set<string>()
 
-  // Based on the debug output, the structure is:
-  // Column 0: Year
-  // Column 1: Device Type (this is what we want as categories)
-  // Column 2: Empty
-  // Column 3: "0" (seems to be a placeholder)
-  // Columns 4-26: Years 1995, 1997, 1998, 2001, 2004, 2005, 2008, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024
-
-  const headerRow = data[0]
-  const yearColumns = headerRow.slice(4, 26) // Years from columns 4-25
-  const validYears = yearColumns.filter((year) => year && /^\d{4}$/.test(year))
-
-  console.log("📅 Found years:", validYears)
-
-  const annual: { [key: string]: { [year: string]: number } } = {}
-  const cumulative: { [key: string]: { [year: string]: number } } = {}
-
-  // Process data rows (skip header)
+  // Skip header row
   for (let i = 1; i < data.length; i++) {
     const row = data[i]
-    if (!row || row.length < 4) continue
+    if (!row || row.length < 13) continue
 
-    const deviceType = row[1]?.trim() // Device Type is in column 1
-    if (!deviceType || deviceType === "Error" || deviceType === "") continue
+    const deviceType = row[11]?.trim() // Device type is in column L (index 11)
+    const dateStr = row[1]?.trim() // Date is in column B (index 1)
+    
+    if (!deviceType || deviceType === "" || !dateStr) continue
 
-    annual[deviceType] = {}
+    // Extract year from date
+    const year = new Date(dateStr).getFullYear().toString()
+    years.add(year)
 
-    // Extract annual values for each year
-    validYears.forEach((year, yearIndex) => {
-      const columnIndex = 4 + yearIndex // Years start at column 4
-      const value = Number.parseInt(row[columnIndex]) || 0
-      annual[deviceType][year] = value
-    })
+    if (!deviceTypeCounts[deviceType]) {
+      deviceTypeCounts[deviceType] = {}
+    }
+    
+    deviceTypeCounts[deviceType][year] = (deviceTypeCounts[deviceType][year] || 0) + 1
   }
 
-  // For cumulative data, we need to look for the second set of columns
-  // Based on the structure, cumulative data might be in later columns
-  // Let's check if there are more columns after the "Total # of counts" column
+  const sortedYears = Array.from(years).sort()
+  const categories = Object.keys(deviceTypeCounts).sort()
 
-  const categories = Object.keys(annual)
-  console.log("📋 Found categories:", categories.slice(0, 10), `... (${categories.length} total)`)
-
-  // For now, let's calculate cumulative from annual data
-  Object.keys(annual).forEach((category) => {
+  // Calculate cumulative data
+  const cumulative: { [key: string]: { [year: string]: number } } = {}
+  categories.forEach(category => {
     cumulative[category] = {}
     let runningTotal = 0
-    validYears.forEach((year) => {
-      runningTotal += annual[category][year] || 0
+    sortedYears.forEach(year => {
+      runningTotal += deviceTypeCounts[category][year] || 0
       cumulative[category][year] = runningTotal
     })
   })
 
   return {
-    annual,
+    annual: deviceTypeCounts,
     cumulative,
     categories,
-    years: validYears,
+    years: sortedYears,
   }
 }
 
 export async function fetchDomainData(): Promise<ProcessedData> {
-  console.log("🔍 Fetching Domain data from:", DATA_SOURCES.domain)
-  const data = await fetchCSV(DATA_SOURCES.domain)
+  console.log("🔍 Fetching detailed database to process Domain data")
+  const data = await fetchCSV(DATA_SOURCES.detailedDatabase)
 
-  console.log("📊 Raw Domain data structure:")
-  console.log("First row:", data[0])
-  console.log("Second row:", data[1])
+  // Process the detailed database to create domain summary
+  const domainCounts: { [key: string]: { [year: string]: number } } = {}
+  const years = new Set<string>()
 
-  const headerRow = data[0]
-  const yearColumns = headerRow.slice(4, 26)
-  const validYears = yearColumns.filter((year) => year && /^\d{4}$/.test(year))
-
-  const annual: { [key: string]: { [year: string]: number } } = {}
-  const cumulative: { [key: string]: { [year: string]: number } } = {}
-
-  // Process data rows (skip header)
+  // Skip header row
   for (let i = 1; i < data.length; i++) {
     const row = data[i]
-    if (!row || row.length < 4) continue
+    if (!row || row.length < 16) continue
 
-    const domain = row[3]?.trim() // Domain appears to be in column 3 based on debug output
-    if (!domain || domain === "Error" || domain === "") continue
+    const domain = row[14]?.trim() // Domain is in column O (index 14)
+    const dateStr = row[1]?.trim() // Date is in column B (index 1)
+    
+    if (!domain || domain === "" || !dateStr) continue
 
-    annual[domain] = {}
+    // Extract year from date
+    const year = new Date(dateStr).getFullYear().toString()
+    years.add(year)
 
-    validYears.forEach((year, yearIndex) => {
-      const columnIndex = 4 + yearIndex
-      const value = Number.parseInt(row[columnIndex]) || 0
-      annual[domain][year] = value
-    })
+    if (!domainCounts[domain]) {
+      domainCounts[domain] = {}
+    }
+    
+    domainCounts[domain][year] = (domainCounts[domain][year] || 0) + 1
   }
 
-  // Calculate cumulative
-  const categories = Object.keys(annual)
-  Object.keys(annual).forEach((category) => {
+  const sortedYears = Array.from(years).sort()
+  const categories = Object.keys(domainCounts).sort()
+
+  // Calculate cumulative data
+  const cumulative: { [key: string]: { [year: string]: number } } = {}
+  categories.forEach(category => {
     cumulative[category] = {}
     let runningTotal = 0
-    validYears.forEach((year) => {
-      runningTotal += annual[category][year] || 0
+    sortedYears.forEach(year => {
+      runningTotal += domainCounts[category][year] || 0
       cumulative[category][year] = runningTotal
     })
   })
 
   return {
-    annual,
+    annual: domainCounts,
     cumulative,
     categories,
-    years: validYears,
+    years: sortedYears,
   }
 }
 
 export async function fetchModalityData(): Promise<ProcessedData> {
-  console.log("🔍 Fetching Modality data from:", DATA_SOURCES.modality)
-  const data = await fetchCSV(DATA_SOURCES.modality)
+  console.log("🔍 Fetching detailed database to process Modality data")
+  const data = await fetchCSV(DATA_SOURCES.detailedDatabase)
 
-  const headerRow = data[0]
-  const yearColumns = headerRow.slice(4, 26)
-  const validYears = yearColumns.filter((year) => year && /^\d{4}$/.test(year))
+  // Process the detailed database to create modality summary
+  const modalityCounts: { [key: string]: { [year: string]: number } } = {}
+  const years = new Set<string>()
 
-  const annual: { [key: string]: { [year: string]: number } } = {}
-  const cumulative: { [key: string]: { [year: string]: number } } = {}
-
+  // Skip header row
   for (let i = 1; i < data.length; i++) {
     const row = data[i]
-    if (!row || row.length < 4) continue
+    if (!row || row.length < 18) continue
 
-    const modality = row[3]?.trim() // Modality in column 3
-    if (!modality || modality === "Error" || modality === "") continue
+    const modality = row[16]?.trim() // Modality is in column Q (index 16)
+    const dateStr = row[1]?.trim() // Date is in column B (index 1)
+    
+    if (!modality || modality === "" || !dateStr) continue
 
-    annual[modality] = {}
+    // Extract year from date
+    const year = new Date(dateStr).getFullYear().toString()
+    years.add(year)
 
-    validYears.forEach((year, yearIndex) => {
-      const columnIndex = 4 + yearIndex
-      const value = Number.parseInt(row[columnIndex]) || 0
-      annual[modality][year] = value
-    })
+    if (!modalityCounts[modality]) {
+      modalityCounts[modality] = {}
+    }
+    
+    modalityCounts[modality][year] = (modalityCounts[modality][year] || 0) + 1
   }
 
-  const categories = Object.keys(annual)
-  Object.keys(annual).forEach((category) => {
+  const sortedYears = Array.from(years).sort()
+  const categories = Object.keys(modalityCounts).sort()
+
+  // Calculate cumulative data
+  const cumulative: { [key: string]: { [year: string]: number } } = {}
+  categories.forEach(category => {
     cumulative[category] = {}
     let runningTotal = 0
-    validYears.forEach((year) => {
-      runningTotal += annual[category][year] || 0
+    sortedYears.forEach(year => {
+      runningTotal += modalityCounts[category][year] || 0
       cumulative[category][year] = runningTotal
     })
   })
 
   return {
-    annual,
+    annual: modalityCounts,
     cumulative,
     categories,
-    years: validYears,
+    years: sortedYears,
   }
 }
 
 export async function fetchTaskData(): Promise<ProcessedData> {
-  console.log("🔍 Fetching Task data from:", DATA_SOURCES.task)
-  const data = await fetchCSV(DATA_SOURCES.task)
+  console.log("🔍 Fetching detailed database to process Task data")
+  const data = await fetchCSV(DATA_SOURCES.detailedDatabase)
 
-  const headerRow = data[0]
-  const yearColumns = headerRow.slice(4, 26)
-  const validYears = yearColumns.filter((year) => year && /^\d{4}$/.test(year))
+  // Process the detailed database to create task summary
+  const taskCounts: { [key: string]: { [year: string]: number } } = {}
+  const years = new Set<string>()
 
-  const annual: { [key: string]: { [year: string]: number } } = {}
-  const cumulative: { [key: string]: { [year: string]: number } } = {}
-
+  // Skip header row
   for (let i = 1; i < data.length; i++) {
     const row = data[i]
-    if (!row || row.length < 4) continue
+    if (!row || row.length < 20) continue
 
-    const task = row[3]?.trim() // Task in column 3
-    if (!task || task === "Error" || task === "") continue
+    const task = row[18]?.trim() // Task is in column S (index 18)
+    const dateStr = row[1]?.trim() // Date is in column B (index 1)
+    
+    if (!task || task === "" || !dateStr) continue
 
-    annual[task] = {}
+    // Extract year from date
+    const year = new Date(dateStr).getFullYear().toString()
+    years.add(year)
 
-    validYears.forEach((year, yearIndex) => {
-      const columnIndex = 4 + yearIndex
-      const value = Number.parseInt(row[columnIndex]) || 0
-      annual[task][year] = value
-    })
+    if (!taskCounts[task]) {
+      taskCounts[task] = {}
+    }
+    
+    taskCounts[task][year] = (taskCounts[task][year] || 0) + 1
   }
 
-  const categories = Object.keys(annual)
-  Object.keys(annual).forEach((category) => {
+  const sortedYears = Array.from(years).sort()
+  const categories = Object.keys(taskCounts).sort()
+
+  // Calculate cumulative data
+  const cumulative: { [key: string]: { [year: string]: number } } = {}
+  categories.forEach(category => {
     cumulative[category] = {}
     let runningTotal = 0
-    validYears.forEach((year) => {
-      runningTotal += annual[category][year] || 0
+    sortedYears.forEach(year => {
+      runningTotal += taskCounts[category][year] || 0
       cumulative[category][year] = runningTotal
     })
   })
 
   return {
-    annual,
+    annual: taskCounts,
     cumulative,
     categories,
-    years: validYears,
+    years: sortedYears,
   }
 }
