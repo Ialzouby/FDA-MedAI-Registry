@@ -22,8 +22,11 @@ export function DetailedDataViewer() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all")
   const [selectedYear, setSelectedYear] = useState<string>("all")
   const [selectedDomain, setSelectedDomain] = useState<string>("all")
+  const [selectedTask, setSelectedTask] = useState<string>("all")
+  const [selectedModality, setSelectedModality] = useState<string>("all")
   const [filteredRecords, setFilteredRecords] = useState<DetailedDeviceRecord[]>([])
   const [selectedDevice, setSelectedDevice] = useState<DetailedDeviceRecord | null>(null)
+  const [expandedColumn, setExpandedColumn] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -73,8 +76,16 @@ export function DetailedDataViewer() {
       filtered = filtered.filter((record) => record.domain === selectedDomain)
     }
 
+    if (selectedTask !== "all") {
+      filtered = filtered.filter((record) => record.task === selectedTask)
+    }
+
+    if (selectedModality !== "all") {
+      filtered = filtered.filter((record) => record.modality === selectedModality)
+    }
+
     setFilteredRecords(filtered)
-  }, [data, searchTerm, selectedSpecialty, selectedYear, selectedDomain])
+  }, [data, searchTerm, selectedSpecialty, selectedYear, selectedDomain, selectedTask, selectedModality])
 
   const exportToCSV = () => {
     if (!filteredRecords.length) return
@@ -123,7 +134,13 @@ export function DetailedDataViewer() {
     setSelectedSpecialty("all")
     setSelectedYear("all")
     setSelectedDomain("all")
+    setSelectedTask("all")
+    setSelectedModality("all")
   }
+
+  // For dropdown options
+  const tasks = data ? Array.from(new Set(data.records.map((r) => r.task))).sort() : []
+  const modalities = data ? Array.from(new Set(data.records.map((r) => r.modality))).sort() : []
 
   if (loading) {
     return (
@@ -189,7 +206,7 @@ export function DetailedDataViewer() {
 
       <CardContent className="space-y-6">
         {/* Advanced Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -199,6 +216,20 @@ export function DetailedDataViewer() {
               className="pl-10 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200"
             />
           </div>
+
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+              <SelectItem value="all">All Years</SelectItem>
+              {data.years.map((year) => (
+                <SelectItem key={year} value={year}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
             <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
@@ -228,15 +259,29 @@ export function DetailedDataViewer() {
             </SelectContent>
           </Select>
 
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <Select value={selectedModality} onValueChange={setSelectedModality}>
             <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
-              <SelectValue placeholder="Year" />
+              <SelectValue placeholder="Modality" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
-              <SelectItem value="all">All Years</SelectItem>
-              {data.years.map((year) => (
-                <SelectItem key={year} value={year}>
-                  {year}
+              <SelectItem value="all">All Modalities</SelectItem>
+              {modalities.map((modality) => (
+                <SelectItem key={modality} value={modality}>
+                  {modality}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedTask} onValueChange={setSelectedTask}>
+            <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-white focus:ring-gray-900 dark:focus:ring-white transition-all duration-200">
+              <SelectValue placeholder="Task" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+              <SelectItem value="all">All Tasks</SelectItem>
+              {tasks.map((task) => (
+                <SelectItem key={task} value={task}>
+                  {task}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -263,8 +308,23 @@ export function DetailedDataViewer() {
                 <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
                   Specialty
                 </th>
-                <th className="text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
+                <th
+                  className={`text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 cursor-pointer min-w-[120px] ${expandedColumn === 'domain' ? 'w-96' : 'w-40'}`}
+                  onClick={() => setExpandedColumn(expandedColumn === 'domain' ? null : 'domain')}
+                >
                   Domain
+                </th>
+                <th
+                  className={`text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 cursor-pointer min-w-[120px] ${expandedColumn === 'modality' ? 'w-96' : 'w-40'}`}
+                  onClick={() => setExpandedColumn(expandedColumn === 'modality' ? null : 'modality')}
+                >
+                  Modality
+                </th>
+                <th
+                  className={`text-left p-4 font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 cursor-pointer min-w-[120px] ${expandedColumn === 'task' ? 'w-96' : 'w-40'}`}
+                  onClick={() => setExpandedColumn(expandedColumn === 'task' ? null : 'task')}
+                >
+                  Task
                 </th>
               </tr>
             </thead>
@@ -297,7 +357,21 @@ export function DetailedDataViewer() {
                       {record.medicalSpecialty}
                     </Badge>
                   </td>
-                  <td className="p-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{record.domain}</td>
+                  <td
+                    className={`p-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors ${expandedColumn === 'domain' ? 'whitespace-normal max-w-3xl' : 'truncate max-w-xs'}`}
+                  >
+                    {record.domain.replace(/\s*\([^)]*\)/g, "")}
+                  </td>
+                  <td
+                    className={`p-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors ${expandedColumn === 'modality' ? 'whitespace-normal max-w-3xl' : 'truncate max-w-xs'}`}
+                  >
+                    {record.modality.replace(/\s*\([^)]*\)/g, "")}
+                  </td>
+                  <td
+                    className={`p-4 text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors ${expandedColumn === 'task' ? 'whitespace-normal max-w-3xl' : 'truncate max-w-xs'}`}
+                  >
+                    {record.task.replace(/\s*\([^)]*\)/g, "")}
+                  </td>
                 </tr>
               ))}
             </tbody>

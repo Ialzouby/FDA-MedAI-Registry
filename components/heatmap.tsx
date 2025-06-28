@@ -85,9 +85,9 @@ export function Heatmap({ data, categories, years, title }: HeatmapProps) {
               <div key={category} className="contents">
                 <div
                   className="sticky left-0 bg-white dark:bg-gray-800 z-10 text-xs font-medium py-2 px-2 border-r border-gray-200 dark:border-gray-600 truncate text-gray-900 dark:text-gray-100"
-                  title={category}
+                  title={category.replace(/\s*\([^)]*\)/g, "")}
                 >
-                  {category}
+                  {category.replace(/\s*\([^)]*\)/g, "")}
                 </div>
                 {years.map((year) => {
                   const value = data[category]?.[year] || 0
@@ -96,7 +96,7 @@ export function Heatmap({ data, categories, years, title }: HeatmapProps) {
                       key={`${category}-${year}`}
                       className="h-8 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
                       style={{ backgroundColor: getColor(value) }}
-                      title={`${category} (${year}): ${value}`}
+                      title={`${category.replace(/\s*\([^)]*\)/g, "")} (${year}): ${value}`}
                     >
                       {value > 0 ? value : ""}
                     </div>

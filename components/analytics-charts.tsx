@@ -24,6 +24,11 @@ interface AnalyticsData {
   task: ProcessedData | null
 }
 
+// Utility function to clean category names
+function cleanCategoryName(name: string) {
+  return name.replace(/\s*\([^)]*\)/g, "")
+}
+
 export function AnalyticsCharts() {
   const [data, setData] = useState<AnalyticsData>({
     deviceType: null,

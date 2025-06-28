@@ -6,6 +6,11 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { fetchDetailedDeviceData, type DetailedProcessedData } from "@/lib/detailed-data-fetcher"
 
+// Utility function to clean category names
+function cleanCategoryName(name: string) {
+  return name.replace(/\s*\([^)]*\)/g, "")
+}
+
 export function TopCategories() {
   const [data, setData] = useState<DetailedProcessedData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -81,8 +86,8 @@ export function TopCategories() {
             <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center">
               <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{index + 1}</span>
             </div>
-            <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs" title={category.name}>
-              {category.name}
+            <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-xs" title={cleanCategoryName(category.name)}>
+              {cleanCategoryName(category.name)}
             </span>
           </div>
           <Badge variant="outline" className="border-gray-300 dark:border-gray-600 font-mono">

@@ -167,7 +167,7 @@ export function LineChart({ data, categories, years, title, selectedCategories }
               <div key={category} className="flex items-center gap-2 text-sm">
                 <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
                 <span className="truncate" title={category}>
-                  {category}
+                  {category.replace(/\s*\([^)]*\)/g, "")}
                 </span>
               </div>
             ))}
