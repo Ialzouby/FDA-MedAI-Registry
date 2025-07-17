@@ -36,7 +36,7 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">5. Intellectual Property</h2>
             <p className="mb-4">
-              The dashboard interface and analytical tools are proprietary to Convenient Intelligence Group. The underlying FDA data remains in the public domain. Users may not reproduce, distribute, or create derivative works without explicit permission.
+              The dashboard interface and analytical tools are proprietary to Covenant Intelligence Group. The underlying FDA data remains in the public domain. Users may not reproduce, distribute, or create derivative works without explicit permission.
             </p>
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">6. Privacy and Data Usage</h2>
@@ -46,7 +46,7 @@ export default function TermsPage() {
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">7. Limitation of Liability</h2>
             <p className="mb-4">
-              Convenient Intelligence Group shall not be liable for any damages arising from the use of this dashboard, including but not limited to direct, indirect, incidental, or consequential damages.
+              Covenant Intelligence Group shall not be liable for any damages arising from the use of this dashboard, including but not limited to direct, indirect, incidental, or consequential damages.
             </p>
 
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">8. Modifications</h2>

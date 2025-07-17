@@ -35,7 +35,7 @@ export default function AboutPage() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">The Team</h2>
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Convenient Intelligence Group</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Covenant Intelligence Group</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Leading the development of intelligent healthcare analytics platforms
                 </p>

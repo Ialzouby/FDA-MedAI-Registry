@@ -6,7 +6,7 @@ export default function ResearchPage() {
   const publications = [
     {
       title: "AI-Enabled Medical Devices: A Comprehensive Analysis of FDA Approvals and Clinical Impact",
-      authors: ["Convenient Intelligence Group", "FACT Group"],
+      authors: ["Covenant Intelligence Group", "FACT Group"],
       journal: "Nature Digital Medicine",
       year: "2024",
       doi: "10.1038/s41746-024-01000-0",
@@ -16,7 +16,7 @@ export default function ResearchPage() {
     },
     {
       title: "Validation Methods in AI Medical Devices: A Systematic Review",
-      authors: ["FACT Group", "Convenient Intelligence Group"],
+      authors: ["FACT Group", "Covenant Intelligence Group"],
       journal: "Journal of Medical Internet Research",
       year: "2024",
       doi: "10.2196/12345",
@@ -26,7 +26,7 @@ export default function ResearchPage() {
     },
     {
       title: "Trends in Medical AI: An Analysis of FDA Device Approvals (2017-2024)",
-      authors: ["Convenient Intelligence Group"],
+      authors: ["Covenant Intelligence Group"],
       journal: "Healthcare Analytics",
       year: "2024",
       doi: "10.1016/j.healthcare.2024.001",
@@ -43,7 +43,7 @@ export default function ResearchPage() {
       date: "November 2024",
       location: "Washington, DC",
       type: "Oral Presentation",
-      authors: ["Convenient Intelligence Group", "FACT Group"]
+      authors: ["Covenant Intelligence Group", "FACT Group"]
     },
     {
       title: "Building Trustworthy AI Medical Devices: Lessons from FDA Approvals",

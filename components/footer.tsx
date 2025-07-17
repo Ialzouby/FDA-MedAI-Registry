@@ -83,10 +83,10 @@ export function Footer() {
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              &copy; {new Date().getFullYear()} Convenient Intelligence Group. All rights reserved.
+              &copy; {new Date().getFullYear()} Covenant Intelligence Group. All rights reserved.
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Powered by Convenient Intelligence Group
+              Powered by Covenant Intelligence Group
             </div>
           </div>
         </div>

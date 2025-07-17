@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, TrendingDown, Activity, Users, FileText } from "lucide-react"
+import { TrendingUp, TrendingDown, Activity, Users, FileText, Target } from "lucide-react"
 import { fetchDetailedDeviceData, type DetailedProcessedData } from "@/lib/detailed-data-fetcher"
 
 export function OverviewStats() {
@@ -59,6 +59,19 @@ export function OverviewStats() {
     return deviceDate >= thirtyDaysAgo
   }).length
 
+  // New calculations for the 4 cards
+  const uniqueDevelopers = new Set(data.records.map(r => r.deviceDeveloper).filter(Boolean)).size;
+  const developerCounts = data.records.reduce((acc, record) => {
+    if (record.deviceDeveloper) {
+      acc[record.deviceDeveloper] = (acc[record.deviceDeveloper] || 0) + 1;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  const topDeveloperEntry = Object.entries(developerCounts).sort(([, a], [, b]) => b - a)[0];
+  const topDeveloperName = topDeveloperEntry ? topDeveloperEntry[0] : 'N/A';
+  const topDeveloperCount = topDeveloperEntry ? topDeveloperEntry[1] : 0;
+  const uniqueDeviceTypes = new Set(data.records.map(r => r.deviceType).filter(Boolean)).size;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {/* Total Devices */}
@@ -83,44 +96,13 @@ export function OverviewStats() {
         </CardContent>
       </Card>
 
-      {/* Growth Rate */}
+      {/* Unique Developers */}
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">YoY Growth</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {isPositiveGrowth ? "+" : ""}
-                {growthRate.toFixed(1)}%
-              </p>
-            </div>
-            <div
-              className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                isPositiveGrowth ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
-              }`}
-            >
-              {isPositiveGrowth ? (
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
-              ) : (
-                <TrendingDown className="h-6 w-6 text-red-600 dark:text-red-400" />
-              )}
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <Badge variant="secondary" className="text-xs">
-              {currentYear} vs {lastYear}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Medical Specialties */}
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Specialties</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{data.medicalSpecialties.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Unique Developers</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{uniqueDevelopers}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
               <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -128,27 +110,48 @@ export function OverviewStats() {
           </div>
           <div className="mt-4 flex items-center">
             <Badge variant="secondary" className="text-xs">
-              Active categories
+              Total developers
             </Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recent Activity */}
+      {/* Top Developer */}
+      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Top Developer</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{topDeveloperCount}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0 whitespace-nowrap">{topDeveloperName}</p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center">
+            <Badge variant="secondary" className="text-xs mt-2">
+              Devices by top developer
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Device Types */}
       <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Recent (30d)</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{recentDevices}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Device Types</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{uniqueDeviceTypes}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-              <Activity className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+              <Activity className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
             <Badge variant="secondary" className="text-xs">
-              New approvals
+              Unique device types
             </Badge>
           </div>
         </CardContent>
