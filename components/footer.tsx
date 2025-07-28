@@ -56,14 +56,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-gray-600 dark:text-gray-400">
+                <Link href="/privacy" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                   Privacy Policy
-                </span>
+                </Link>
               </li>
               <li>
-                <span className="text-gray-600 dark:text-gray-400">
+                <Link href="/cookies" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
                   Cookie Policy
-                </span>
+                </Link>
               </li>
             </ul>
           </div>
