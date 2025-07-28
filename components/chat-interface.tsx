@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2, Send, Bot } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 interface Message {
   role: "user" | "assistant"
@@ -80,7 +82,17 @@ export function ChatInterface() {
               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-none'
           }`}
         >
-          {msg.content}
+          {isUser ? (
+            msg.content
+          ) : (
+            <div className="chat-markdown">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+              >
+                {msg.content}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
       </div>
     )
