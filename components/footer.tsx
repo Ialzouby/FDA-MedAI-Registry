@@ -14,11 +14,11 @@ export function Footer() {
               Comprehensive analytics platform for FDA AI/ML-enabled medical device data.
             </p>
             <div className="flex items-center gap-4 text-sm">
-              <a href="https://factgroup.ai" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
+              <a href="https://covintel.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
                 Covenent Intelligence Group
               </a>
               <span className="text-gray-400">|</span>
-              <a href="https://www.fda.gov/medical-devices/device-approvals-denials-and-clearances/ai-and-machine-learning-enabled-medical-devices" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
+              <a href="https://www.fda.gov/medical-devices/software-medical-device-samd/artificial-intelligence-enabled-medical-devices" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">
                 FDA Database
               </a>
             </div>

@@ -53,7 +53,7 @@ export function Dashboard() {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Covenant AI Insight</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Covenant AI Insights</h1>
               <p className="text-sm text-gray-600 dark:text-gray-400">A product of The Covenant Intelligence Group</p>
             </div>
           </div>
